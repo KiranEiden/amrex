@@ -3,7 +3,7 @@ AMREX_HOME ?= ../../..
 DEBUG	= TRUE
 DEBUG	= FALSE
 
-DIM	= 3
+# DIM	= 3
 DIM	= 2
 
 COMP    = gcc
@@ -17,15 +17,16 @@ USE_OMP   = FALSE
 
 #EBASE     = particle_compare
 #EBASE     = PlotfileToMatLab
-EBASE     = PlotfileToTurb
+#EBASE     = PlotfileToTurb
 #EBASE     = MultiFabToMatLab
 #EBASE     = PtwisePltTransform
 #EBASE     = PlotfileGradient
 #EBASE     = cube_extract
+EBASE      = RotateCheckpoint
 
 # If NEEDS_f90_SRC=TRUE, look for ${EBASE}_nd.f90
-#NEEDS_f90_SRC = FALSE
-NEEDS_f90_SRC = TRUE
+NEEDS_f90_SRC = FALSE
+#NEEDS_f90_SRC = TRUE
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
@@ -35,6 +36,9 @@ endif
 
 include ./Make.package
 include $(AMREX_HOME)/Src/Base/Make.package
+include $(AMREX_HOME)/Src/Amr/Make.package
+include $(AMREX_HOME)/Src/AmrCore/Make.package
+include $(AMREX_HOME)/Src/Boundary/Make.package
 
 vpath %.c   : . $(vpathdir)
 vpath %.h   : . $(vpathdir)
