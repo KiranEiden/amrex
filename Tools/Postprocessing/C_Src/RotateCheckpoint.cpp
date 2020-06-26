@@ -1,7 +1,9 @@
-// Rotate 1D spherical or 2D axisymmetric coords into a higher dimension
+// Rotate 2D axisymmetric coords into a higher dimension
 
 #include <memory>
 #include <iostream>
+#include <stdexcept>
+#include <string>
 
 #include "AMReX_VisMF.H"
 #include "AMReX_FArrayBox.H"
@@ -10,6 +12,10 @@
 
 using namespace amrex;
 
+// If we also want to support 1D spherical coords we would need to make
+// this an input parameter
+const int INPUT_DIM = 2;
+// Checkpoint version indicator
 const std::string CP_VERSION_STR("CheckPointVersion_1.0");
 
 struct StateDataLike
@@ -56,36 +62,54 @@ struct AmrLike
     Vector<AmrLevelLike> amrLevels;
 };
 
+/*
+class CoordSysLike: public CoordSys
+{
+    std::istream& operator>>(std::istream& is, CoordSys& c)
+    {
+        int coord;
+        is.ignore(BL_IGNORE_MAX, '(') >> coord;
+        c.c_sys = (CoordSys::CoordType) coord;
+        AMREX_D_EXPR(is.ignore(BL_IGNORE_MAX, '(') >> c.offset[0],
+                     is.ignore(BL_IGNORE_MAX, ',') >> c.offset[1],
+                     is.ignore(BL_IGNORE_MAX, ',') >> c.offset[2]);
+        is.ignore(BL_IGNORE_MAX, ')');
+        Real cellsize[3];
+        AMREX_D_EXPR(is.ignore(BL_IGNORE_MAX, '(') >> cellsize[0],
+                     is.ignore(BL_IGNORE_MAX, ',') >> cellsize[1],
+                     is.ignore(BL_IGNORE_MAX, ',') >> cellsize[2]);
+        is.ignore(BL_IGNORE_MAX, ')');
+        int tmp;
+        is >> tmp;
+        c.ok = tmp ? true:false;
+        is.ignore(BL_IGNORE_MAX, '\n');
+        for (int k = 0; k < AMREX_SPACEDIM; k++)
+        {
+            c.dx[k] = cellsize[k];
+     	    c.inv_dx[k] = 1.0/cellsize[k];
+        }
+        return is;
+    }
+}
+*/
+
 class Rotator
 {
 public:
     
-    Rotator();
+    Rotator(const std::string& checkfile);
     
 private:
     
     void readCheckpoint(const std::string& filePath);
     
     AmrLike amrlike;
-    
-    std::string chkfile;
     int nghost = 0;
 };
 
-Rotator::Rotator()
+Rotator::Rotator(const std::string& checkfile)
 {
-    ParmParse pp;
-    
-    if(pp.contains("checkin"))
-    {
-        pp.get("checkin", chkfile);
-    }
-    else
-    {
-        Abort("No checkpoint file supplied!");
-    }
-    
-    readCheckpoint(chkfile);
+    readCheckpoint(checkfile);
 }
 
 void Rotator::readCheckpoint(const std::string& filePath)
@@ -280,12 +304,20 @@ int main(int argc, char* argv[])
     std::cout << argv[1] << std::endl;
     std::cout << "AMReX init..." << std::endl;
     
-    Initialize(argc, argv);
+    Initialize(argc, argv, false);
     
     std::cout << "Creating rotator..." << std::endl;
     
+    if(argc != 2)
+    {
+        std::cout << "Error: must supply path to checkpoint file." << std::endl;
+        return -1;
+    }
+    
+    std::string checkfile(argv[1]);
+    
     // Create Rotator object from checkpoint file
-    // Rotator rotator;
+    Rotator rotator(checkfile);
     
     return 0;
 }
