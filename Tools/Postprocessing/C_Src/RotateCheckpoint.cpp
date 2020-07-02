@@ -12,11 +12,25 @@
 
 using namespace amrex;
 
-// If we also want to support 1D spherical coords we would need to make
+// If we also want to support 1D spherical coords we would probably want to make
 // this an input parameter
-const int INPUT_DIM = 2;
+#define ROTATOR_INPUT_DIM 2
+
+// To use for dimension-agnostic expressions
+#if ROTATOR_INPUT_DIM == 1
+#define ROTATOR_ID_EXPR(a,b) ((void)((a),0))
+#else
+#define ROTATOR_ID_EXPR(a,b) ((void)((a),(b),0))
+#endif
+
 // Checkpoint version indicator
 const std::string CP_VERSION_STR("CheckPointVersion_1.0");
+
+struct GeomLike
+{
+    Real offset[ROTATOR_INPUT_DIM];
+    bool ok;
+};
 
 struct StateDataLike
 {
@@ -57,41 +71,10 @@ struct AmrLike
     Vector<int> n_cycle;
     Vector<Real> dt_min;
     Vector<IntVect> ref_ratio;
-    Vector<Geometry> geom;
+    Vector<GeomLike> geom;
     Vector< Vector<Real> > dx;
     Vector<AmrLevelLike> amrLevels;
 };
-
-/*
-class CoordSysLike: public CoordSys
-{
-    std::istream& operator>>(std::istream& is, CoordSys& c)
-    {
-        int coord;
-        is.ignore(BL_IGNORE_MAX, '(') >> coord;
-        c.c_sys = (CoordSys::CoordType) coord;
-        AMREX_D_EXPR(is.ignore(BL_IGNORE_MAX, '(') >> c.offset[0],
-                     is.ignore(BL_IGNORE_MAX, ',') >> c.offset[1],
-                     is.ignore(BL_IGNORE_MAX, ',') >> c.offset[2]);
-        is.ignore(BL_IGNORE_MAX, ')');
-        Real cellsize[3];
-        AMREX_D_EXPR(is.ignore(BL_IGNORE_MAX, '(') >> cellsize[0],
-                     is.ignore(BL_IGNORE_MAX, ',') >> cellsize[1],
-                     is.ignore(BL_IGNORE_MAX, ',') >> cellsize[2]);
-        is.ignore(BL_IGNORE_MAX, ')');
-        int tmp;
-        is >> tmp;
-        c.ok = tmp ? true:false;
-        is.ignore(BL_IGNORE_MAX, '\n');
-        for (int k = 0; k < AMREX_SPACEDIM; k++)
-        {
-            c.dx[k] = cellsize[k];
-     	    c.inv_dx[k] = 1.0/cellsize[k];
-        }
-        return is;
-    }
-}
-*/
 
 class Rotator
 {
@@ -106,6 +89,62 @@ private:
     AmrLike amrlike;
     int nghost = 0;
 };
+
+std::istream& operator>>(std::istream& is, GeomLike& g)
+{
+    int coord;
+    is.ignore(BL_IGNORE_MAX, '(') >> coord;
+    BL_ASSERT(coord == 1);
+    ROTATOR_ID_EXPR(is.ignore(BL_IGNORE_MAX, '(') >> g.offset[0],
+                    is.ignore(BL_IGNORE_MAX, ',') >> g.offset[1]);
+    for(int k = ROTATOR_INPUT_DIM; k < AMREX_SPACEDIM; ++k)
+    {
+        // Check with Don
+        g.offset[k] = 0;
+    }
+    is.ignore(BL_IGNORE_MAX, ')');
+    
+    Real cellsize[AMREX_SPACEDIM];
+    ROTATOR_ID_EXPR(is.ignore(BL_IGNORE_MAX, '(') >> cellsize[0],
+                    is.ignore(BL_IGNORE_MAX, ',') >> cellsize[1]);
+    for(int k = ROTATOR_INPUT_DIM; k < AMREX_SPACEDIM; ++k)
+    {
+        cellsize[k] = 1.;
+    }
+    is.ignore(BL_IGNORE_MAX, ')');
+    
+    int tmp;
+    is >> tmp;
+    g.ok = tmp ? true:false;
+    is.ignore(BL_IGNORE_MAX, '\n');
+    
+    for(int k = 0; k < AMREX_SPACEDIM; ++k)
+    {
+        g.dx[k] = cellsize[k];
+ 	    g.inv_dx[k] = 1.0/cellsize[k];
+    }
+    
+    /*
+    Box     bx;
+    RealBox rb;
+    is >> (CoordSys&) g >> rb >> bx;
+    g.Domain(bx);
+    g.ProbDomain(rb);
+
+    int ic = is.peek();
+    if (ic == static_cast<int>('P')) {
+        char c;
+        is >> c;
+        IntVect is_per;
+        is >> is_per;
+        g.setPeriodicity({AMREX_D_DECL(is_per[0],is_per[1],is_per[2])});
+    } else {
+        g.setPeriodicity(DefaultGeometry().isPeriodic());
+    }
+    */
+
+    return is;
+}
 
 Rotator::Rotator(const std::string& checkfile)
 {
