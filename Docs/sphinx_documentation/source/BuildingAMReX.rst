@@ -35,8 +35,8 @@ list of important variables.
    +------------+-------------------------------------+--------------------+
    | COMP       | gnu, cray, ibm, intel, llvm, or pgi | none               |
    +------------+-------------------------------------+--------------------+
-   | CXXSTD     | C++ standard (``c++11``, ``c++14``) | compiler default,  |
-   |            |                                     | at least ``c++11`` |
+   | CXXSTD     | C++ standard (``c++11``, ``c++14``, | compiler default,  |
+   |            | ``c++17``, ``c++20``)               | at least ``c++11`` |
    +------------+-------------------------------------+--------------------+
    | DEBUG      | TRUE or FALSE                       | FALSE              |
    +------------+-------------------------------------+--------------------+
@@ -52,7 +52,7 @@ list of important variables.
    +------------+-------------------------------------+--------------------+
    | USE_HIP    | TRUE or FALSE                       | FALSE              |
    +------------+-------------------------------------+--------------------+
-   | USE_DPC++  | TRUE or FALSE                       | FALSE              |
+   | USE_DPCPP  | TRUE or FALSE                       | FALSE              |
    +------------+-------------------------------------+--------------------+
    | USE_RPATH  | TRUE or FALSE                       | FALSE              |
    +------------+-------------------------------------+--------------------+
@@ -95,12 +95,15 @@ One could set the ``DIM`` variable to either 1, 2, or 3, depending on
 the dimensionality of the problem.  The default dimensionality is 3.
 AMReX uses double precision by default.  One can change to single
 precision by setting ``PRECISION=FLOAT``.
+(Particles have an equivalent flag ``USE_SINGLE_PRECISION_PARTICLES=TRUE/FALSE``.)
 
 Variables ``DEBUG``, ``USE_MPI`` and ``USE_OMP`` are optional with default set
 to FALSE.  The meaning of these variables should
 be obvious.  When ``DEBUG=TRUE``, aggressive compiler optimization flags are
 turned off and assertions in source code are turned on. For production runs,
 ``DEBUG`` should be set to FALSE.
+An advanced variable, ``MPI_THREAD_MULTIPLE``, can be set to TRUE to initialize
+MPI with support for concurrent MPI calls from multiple threads.
 
 Variables ``USE_CUDA``, ``USE_HIP`` and ``USE_DPCPP`` are used for
 targeting Nvidia, AMD and Intel GPUs, respectively.  At most one of
@@ -477,6 +480,8 @@ below.
    +------------------------------+-------------------------------------------------+-------------+-----------------+
    | ENABLE_MEM_PROFILE           |  Build with memory-profiling support            | NO          | YES, NO         |
    +------------------------------+-------------------------------------------------+-------------+-----------------+
+   | ENABLE_MPI_THREAD_MULTIPLE   |  Concurrent MPI calls from multiple threads     | NO          | YES, NO         |
+   +------------------------------+-------------------------------------------------+-------------+-----------------+
    | ENABLE_PROFPARSER            |  Build with profile parser support              | NO          | YES, NO         |
    +------------------------------+-------------------------------------------------+-------------+-----------------+
    | ENABLE_FPE                   |  Build with Floating Point Exceptions checks    | NO          | YES, NO         |
@@ -497,7 +502,7 @@ below.
    +------------------------------+-------------------------------------------------+-------------+-----------------+
    | ENABLE_PLOTFILE_TOOLS        |  Build and install plotfile postprocessing tools| NO          | YES, NO         |
    +------------------------------+-------------------------------------------------+-------------+-----------------+
-   | ENABLE_TUTORIALS             |  Build tutorials                                | NO          | YES, NO         |
+   | AMReX_BUILD_TUTORIALS        |  Build tutorials                                | NO          | YES, NO         |
    +------------------------------+-------------------------------------------------+-------------+-----------------+
    | ALLOW_DIFFERENT_COMPILER     |  Allow an app to use a different compiler       | NO          | YES, NO         |
    +------------------------------+-------------------------------------------------+-------------+-----------------+
@@ -523,6 +528,36 @@ are defined, AMReX default flags are used.
 
 For a detailed explanation of GPU support in AMReX CMake, refer to section :ref:`sec:gpu:build`.
 
+
+Building Tutorials
+------------------
+
+In order to build the tutorials provided in ``Tutorials/`` alongside the AMReX library,
+follows these steps:
+
+.. highlight:: console
+
+::
+
+    mkdir /path/to/builddir
+    cd    /path/to/builddir
+    cmake [options]  -DAMReX_BUILD_TUTORIALS=YES  /path/to/amrex
+    make
+
+
+Note that only the tutorials compatible with ``[options]`` will be built.
+To run one of the tutorials, do:
+
+.. highlight:: console
+
+::
+
+    cd  /path/to/builddir/Tutorials/group/name
+    ./Tutorial_group_name [input_file]
+
+
+``[input_file]`` is any of the input files required by the tutorials and located in
+``/path/to/builddir/Tutorials/group/name/``
 
 
 CMake and macOS

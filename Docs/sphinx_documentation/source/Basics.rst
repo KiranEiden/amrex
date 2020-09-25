@@ -38,7 +38,7 @@ It is used throughout AMReX, however its functions are not defined
 for device code. :cpp:`GpuArray` is AMReX's built-in alternative.  It
 is a trivial type that works on both host and device.  It also works
 when compiled just for CPU.  Besides :cpp:`GpuArray`, AMReX also
-provides GPU safe :cpp:`Array1D`, :cpp:`Array2D` and :cpp:`Array3d` that are
+provides GPU safe :cpp:`Array1D`, :cpp:`Array2D` and :cpp:`Array3D` that are
 1, 2 and 3-dimensional fixed size arrays, respectively.  These three
 class templates can have non-zero based indexing.
 
@@ -283,7 +283,7 @@ Sometimes an application code may want to set a default that differs from the
 default in AMReX.  In this case, it is often convenient to define a function that
 sets the variable(s), and pass the name of that function to :cpp:`amrex::Initialize`.
 As an example, we may define :cpp:`add_par` to set :cpp:`extend_domain_face`
-to true if it hasn't already been set in the inputs file.
+to false if it hasn't already been set in the inputs file.
 
 .. highlight:: c++
 
@@ -292,7 +292,7 @@ to true if it hasn't already been set in the inputs file.
     void add_par () {
        ParmParse pp("eb2");
        if(not pp.contains("extend_domain_face")) {
-          pp.add("extend_domain_face",true);
+          pp.add("extend_domain_face",false);
        }
     };
 
@@ -304,7 +304,7 @@ Then we would pass :cpp:`add_par` into :cpp:`amrex::Initialize`:
 
     amrex::Initialize(argc, argv, true, MPI_COMM_WORLD, add_par);
 
-This value replaces the current default value of false in AMReX itself, but
+This value replaces the current default value of true in AMReX itself, but
 can still be over-written by setting a value in the inputs file.
 
 
