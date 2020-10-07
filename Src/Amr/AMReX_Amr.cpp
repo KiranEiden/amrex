@@ -249,7 +249,7 @@ Amr::InitAmr ()
 #ifdef BL_USE_SENSEI_INSITU
     insitu_bridge          = nullptr;
 #endif
-
+    
     for (int i = 0; i < AMREX_SPACEDIM; i++)
         isPeriodic[i] = false;
 
@@ -1353,7 +1353,7 @@ Amr::FinalizeInit (Real              strt_time,
 
 void
 Amr::restart (const std::string& filename)
-{
+{    
     BL_PROFILE_REGION_START("Amr::restart()");
     BL_PROFILE("Amr::restart()");
 
@@ -3297,4 +3297,3 @@ Amr::RedistributeParticles ()
 #endif
 
 }
-

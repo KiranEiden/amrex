@@ -61,7 +61,8 @@ operator >> (std::istream &is, RealBox& b)
     Real hi[AMREX_SPACEDIM] {};
 #ifdef BL_USE_FLOAT
     double dlotemp, dhitemp;
-    for (int i = 0; i < AMREX_SPACEDIM; i++) {
+    for (int i = 0; i < AMREX_SPACEDIM; i++) 
+    {
         is >> dlotemp >> dhitemp;
         lo[i] = dlotemp;
         hi[i] = dhitemp;

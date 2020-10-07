@@ -152,19 +152,19 @@ amrex::is_next_non_space(std::istream& is, char c)
     const int pos = is.tellg();
     const int cseek = static_cast<int>(c);
 
-    bool found = false;
+    bool found;
     int ic;
 
     // search for first non-whitespace char and test if c
-    while (! is.eof()) {
-      ic = is.peek();
-      if (ic == cseek) {
-        found = true;
-        break;
-      } else if (! isspace(ic))
-        break;
-
-      is.seekg(1, is.cur);
+    is >> std::ws;
+    
+    if(is.eof())
+    {
+        found = false;
+    }
+    else
+    {
+        found = (is.peek() == cseek);
     }
 
     // reset input stream is
