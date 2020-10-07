@@ -153,7 +153,6 @@ amrex::is_next_non_space(std::istream& is, char c)
     const int cseek = static_cast<int>(c);
 
     bool found;
-    int ic;
 
     // search for first non-whitespace char and test if c
     is >> std::ws;
